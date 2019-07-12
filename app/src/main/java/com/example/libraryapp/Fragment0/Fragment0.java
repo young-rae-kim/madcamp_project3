@@ -24,9 +24,7 @@ public class Fragment0 extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.custom_tab, null);
-        mTextView = view.findViewById(R.id.txt_name);
-        mTextView.setText("Fragment 0");
+        View view = inflater.inflate(R.layout.fragment_0, null);
         return view;
     }
 }
