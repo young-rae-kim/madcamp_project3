@@ -15,8 +15,9 @@ public class BookItem {
     private String author;
     private String publisher;
     private String pubdate;
+    private String isbn;
     private BookStatus status = BookStatus.Available;
-    public BookItem(String thumbnail, String title, String author, String publisher, String pubdate) {
+    public BookItem(String thumbnail, String title, String author, String publisher, String pubdate, String isbn) {
         this.thumbnail = thumbnail;
         this.title = title;
         this.author = author;
@@ -30,4 +31,5 @@ public class BookItem {
     public String getPublisher() { return publisher; }
     public String getStatus() { return status.toString(); }
     public String getPubdate() { return pubdate; }
+    public String getIsbn() { return isbn; }
 }
