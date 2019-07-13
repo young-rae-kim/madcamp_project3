@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
 import com.example.libraryapp.BookItem;
-import com.example.libraryapp.CartAdapter;
 import com.example.libraryapp.R;
 
 import java.util.ArrayList;

@@ -36,9 +36,16 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,9 +53,9 @@ import java.util.Date;
 public class BottomSheetFragment extends BottomSheetDialogFragment {
     private final int SEND_PICTURE = 0;
     private final int REQUEST_IMAGE_CAPTURE = 1;
+    private final int BARCODE = 2;
     private int cartSize = 0;
     private boolean imageFilled = false;
-    private CardView bookCard;
     private CardView cartCard;
     private CardView barcodeCard;
     private RecyclerView recyclerView;
@@ -78,10 +85,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.bottom_fragment, container, false);
         barcodeCard = view.findViewById(R.id.barcodeCard);
-        bookCard = view.findViewById(R.id.bookCard);
         cartCard = view.findViewById(R.id.cartCard);
         imageView = view.findViewById(R.id.thumbnailImage);
         textView = view.findViewById(R.id.thumbnailImageText);
@@ -160,7 +166,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), BarcodeActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, BARCODE);
             }
         });
 
@@ -208,7 +214,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                 BookItem newItem = new BookItem(currentPhotoPath,
                             editTitle.getText().toString(),
                             editAuthor.getText().toString(),
-                            editPublisher.getText().toString());
+                            editPublisher.getText().toString(),
+                        "Undetermined");
 
                 mCartAdapter.getItems().add(newItem);
                 mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
@@ -302,7 +309,34 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                     textView.setVisibility(View.VISIBLE);
                 }
                 break;
+            case BARCODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    BookItem newItem = new BookItem(data.getStringExtra("thumbnail"),
+                            data.getStringExtra("title"),
+                            data.getStringExtra("author"),
+                            data.getStringExtra("publisher"),
+                            data.getStringExtra("pubdate"));
+
+                    mCartAdapter.getItems().add(newItem);
+                    mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
+                    cartSize = mCartAdapter.getItemCount();
+                    editAuthor.getText().clear();
+                    editPublisher.getText().clear();
+                    editTitle.getText().clear();
+                    cartCard.setVisibility(View.VISIBLE);
+                    imageView.setVisibility(View.GONE);
+                    textView.setVisibility(View.VISIBLE);
+                    imageFilled = false;
+
+                    Log.e("Search Book", mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getThumbnail() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getTitle() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getAuthor() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPublisher() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPubdate());
+                }
+                break;
             default:
+                Log.e("BARCODE", "onResult");
                 imageView.setVisibility(View.GONE);
                 textView.setVisibility(View.VISIBLE);
                 break;
@@ -421,5 +455,52 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     public static boolean isGooglePhotosUri(Uri uri) {
         return "com.google.android.apps.photos.content".equals(uri
                 .getAuthority());
+    }
+
+    public void searchBook(final String ISBN) {
+        final String clientId = "ANdtuRVWpm_4fbzP2T_V";
+        final String clientSecret = "8KJe8lEitY";
+        final int display = 1;
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    String apiURL = "https://openapi.naver.com/v1/search/book_adv.xml?d_isbn=" + ISBN + "&display=" + display + "&"; // json 결과
+                    URL url = new URL(apiURL);
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("GET");
+                    con.setRequestProperty("X-Naver-Client-Id", clientId);
+                    con.setRequestProperty("X-Naver-Client-Secret", clientSecret);
+                    con.connect();
+
+                    BufferedReader br;
+                    int responseCode = con.getResponseCode();
+                    if(responseCode == 200) {
+                        InputStream inputStream = con.getInputStream();
+                        BarcodeXmlParser parser = new BarcodeXmlParser();
+                        br = new BufferedReader(new InputStreamReader(inputStream));
+                        ArrayList<BookItem> resultList = parser.parse(inputStream);
+                        br.close();
+                        con.disconnect();
+
+                        return;
+                    } else {
+                        br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
+                        StringBuilder searchResult = new StringBuilder();
+                        String inputLine;
+                        while ((inputLine = br.readLine()) != null) {
+                            searchResult.append(inputLine + "\n");
+                        }
+                        Log.e("Search Book", "Error : " + responseCode + ", " + searchResult.toString());
+                        br.close();
+                        con.disconnect();
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 }
