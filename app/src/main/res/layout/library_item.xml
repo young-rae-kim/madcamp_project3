@@ -23,27 +23,26 @@
             android:layout_toRightOf="@id/library_thumbnail"
             android:textColor="#000000"
             android:text="Title"
-            android:textSize="28dp"/>
+            android:textSize="20dp"/>
         <TextView
             android:id="@+id/library_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:text="Author"
-            android:textSize="20dp"
-            android:layout_marginBottom="8dp"
+            android:textSize="16dp"
             android:layout_toRightOf="@id/library_thumbnail"
             android:layout_below="@+id/library_title"/>
         <TextView
             android:id="@+id/library_publisher"
             android:text="Publisher"
-            android:textSize="20dp"
-            android:layout_marginLeft="16dp"
+            android:textSize="16dp"
+            android:layout_marginLeft="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_toRightOf="@+id/library_author"
-            android:layout_below="@id/library_title"/>
+            android:layout_toRightOf="@+id/library_thumbnail"
+            android:layout_below="@id/library_author"/>
         <TextView
             android:id="@+id/library_status"
             android:text="Available"

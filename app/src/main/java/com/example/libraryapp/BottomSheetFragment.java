@@ -35,8 +35,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,6 +52,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BottomSheetFragment extends BottomSheetDialogFragment {
     private DatabaseReference ref;
@@ -64,6 +70,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView cameraView;
     private TextView textView;
     private String currentPhotoPath;
+    private String owner_email;
     private TextInputEditText editTitle;
     private TextInputEditText editAuthor;
     private TextInputEditText editPublisher;
@@ -74,6 +81,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     private CartAdapter mCartAdapter;
     private BottomSheetBehavior bottomSheetBehavior;
     private RandomISBN randomISBN = new RandomISBN();
+    private DatabaseReference libraryRef;
+    private DatabaseReference bookRef;
 
     @Override
     public int getTheme() {
@@ -85,6 +94,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         super.onCreate(savedInstanceState);
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         ref = database.getReference("server/saving-data/");
+        libraryRef = ref.child("library");
+        bookRef = ref.child("book");
+        owner_email = getArguments().getString("owner_email");
     }
 
     @Nullable
@@ -221,7 +233,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             editAuthor.getText().toString(),
                             editPublisher.getText().toString(),
                             "Undetermined",
-                            randomISBN.GeneratingRandomStringBounded());
+                            randomISBN.GeneratingRandomStringBounded(),
+                            owner_email);
 
                 mCartAdapter.getItems().add(newItem);
                 mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
@@ -251,7 +264,11 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         addLibrary.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO
+                for (int i = 0; i < mCartAdapter.getItemCount(); i++) {
+                    pushBook(i);
+                }
+                cartSize = 0;
+                cartCard.setVisibility(View.GONE);
             }
         });
 
@@ -259,6 +276,48 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
             getDialog().setCanceledOnTouchOutside(true);
         }
         return view;
+    }
+
+    private void pushBook(final int i) {
+        bookRef.orderByChild("isbn").equalTo(mCartAdapter.getItems().get(i).getIsbn()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                long numBooks = dataSnapshot.getChildrenCount();
+                String data = null;
+                if (dataSnapshot.getValue() != null) {
+                    data = dataSnapshot.getValue().toString();
+                }
+                Log.d("push", "number:" + numBooks);
+                if (numBooks == 0) {
+                    libraryRef.push().setValue(mCartAdapter.getItems().get(i));
+                    bookRef.push().setValue(mCartAdapter.getItems().get(i));
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                    Log.d("push", "done");
+                } else if (numBooks == 1 && data != null && data.contains("=")) {
+                    libraryRef.push().setValue(mCartAdapter.getItems().get(i));
+                    String id = data.split("=")[0].substring(1);
+                    int startPosition = data.indexOf("value=") + 6;
+                    int endPosition = data.indexOf(",", startPosition);
+                    int value = Integer.parseInt(data.substring(startPosition, endPosition));
+                    Map<String, Object> update = new HashMap<>();
+                    update.put(id + "/value", value + 1);
+                    bookRef.updateChildren(update);
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                    Log.d("push", "done:" + id + ", " + value);
+                } else {
+                    Log.e("push", "failed");
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private File createImageFile() throws IOException {
@@ -329,7 +388,8 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             data.getStringExtra("author"),
                             data.getStringExtra("publisher"),
                             data.getStringExtra("pubdate"),
-                            data.getStringExtra("isbn"));
+                            data.getStringExtra("isbn"),
+                            owner_email);
 
                     mCartAdapter.getItems().add(newItem);
                     mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
@@ -346,11 +406,12 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getTitle() + ", "
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getAuthor() + ", "
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPublisher() + ", "
-                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPubdate());
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPubdate() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getIsbn() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getOwner());
                 }
                 break;
             default:
-                Log.e("BARCODE", "onResult");
                 imageView.setVisibility(View.GONE);
                 textView.setVisibility(View.VISIBLE);
                 break;

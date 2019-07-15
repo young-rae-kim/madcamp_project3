@@ -1,14 +1,12 @@
 package com.example.libraryapp;
 
 import android.util.Xml;
-import com.example.libraryapp.BookItem;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 public class BarcodeXmlParser {
     private static final String ns = null;
@@ -54,6 +52,7 @@ public class BarcodeXmlParser {
         String author = null;
         String publisher = null;
         String pubdate = null;
+        String isbn = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -67,13 +66,15 @@ public class BarcodeXmlParser {
                 author = readItem(parser, "author");
             } else if (name.equals("publisher")) {
                 publisher = readItem(parser, "publisher");
-            } else if (name.equals("pubdate")){
+            } else if (name.equals("pubdate")) {
                 pubdate = readItem(parser, "pubdate");
+            } else if (name.equals("isbn")) {
+                isbn = readItem(parser, "isbn");
             } else {
                 skip(parser);
             }
         }
-        return new BookItem(image, title, author, publisher, pubdate);
+        return new BookItem(image, title, author, publisher, pubdate, isbn, null);
     }
 
     // Processes title tags in the feed.
