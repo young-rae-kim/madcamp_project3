@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    public String getOwner_email() { return owner_email; }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

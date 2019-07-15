@@ -20,9 +20,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.libraryapp.BookItem;
+import com.example.libraryapp.MainActivity;
 import com.example.libraryapp.PreActivity;
 import com.example.libraryapp.R;
 import com.example.libraryapp.user.BookAdapter;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
@@ -31,15 +37,21 @@ public class Fragment2 extends Fragment {
     private EditText editText;
     private static Context context;
     static ArrayList<BookItem> copyArraylList= new ArrayList<>();
-    ArrayList<BookItem> bookItemArrayList;
+    ArrayList<BookItem> bookItemArrayList = new ArrayList<>();
+    ArrayList<String> bookIDList = new ArrayList<>();
     BookAdapter bookAdapter;
     RecyclerView recyclerView;
     private ImageButton ib_back;
+    private DatabaseReference ref;
+    private DatabaseReference libraryRef;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bookItemArrayList=new ArrayList<>();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        ref = database.getReference("server/saving-data/");
+        libraryRef = ref.child("library");
     }
 
     @Nullable
@@ -50,6 +62,10 @@ public class Fragment2 extends Fragment {
         editText = (EditText) view.findViewById(R.id.et_search);
         recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
+        bookAdapter = new BookAdapter(bookItemArrayList, Glide.with(view));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+        recyclerView.setAdapter(bookAdapter);
+        recyclerView.setLayoutManager(layoutManager);
 
         ib_back = (ImageButton) view.findViewById(R.id.ib_back);
         ib_back.setOnClickListener(new View.OnClickListener() {
@@ -60,21 +76,49 @@ public class Fragment2 extends Fragment {
             }
         });
 
-        //더미 북아이템 생성
-        BookItem bookItem1 = new BookItem("썸네일", "타이틀", "작가", "출판사", "업데이트날짜", "아이디1", "이메일");
-        BookItem bookItem2 = new BookItem("썸네일2", "타이틀2", "작가2", "출판사2", "업데이트날짜2", "아이디2", "이메일2");
-        //bookItemArrayList ;
-        bookItemArrayList=new ArrayList<>();
-        bookItemArrayList.add(bookItem1);
-        bookItemArrayList.add(bookItem2);
+        libraryRef.addChildEventListener(new ChildEventListener() {
+                                             @Override
+                                             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                                                 if (dataSnapshot.getValue() != null) {
+                                                     BookItem item = new BookItem(dataSnapshot.child("thumbnail").getValue().toString(),
+                                                             dataSnapshot.child("title").getValue().toString(),
+                                                             dataSnapshot.child("author").getValue().toString(),
+                                                             dataSnapshot.child("publisher").getValue().toString(),
+                                                             dataSnapshot.child("pubdate").getValue().toString(),
+                                                             dataSnapshot.child("isbn").getValue().toString(),
+                                                             ((MainActivity) getActivity()).getOwner_email());
+                                                     item.setValue(Integer.parseInt(dataSnapshot.child("value").getValue().toString()));
+                                                     item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
+                                                     item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
+                                                     item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
+                                                     bookIDList.add(dataSnapshot.getKey());
+                                                     bookAdapter.getItems().add(item);
+                                                     bookAdapter.notifyItemInserted(bookAdapter.getItemCount() - 1);
+                                                 }
+                                             }
+
+                                             @Override
+                                             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                             }
+
+                                             @Override
+                                             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                                             }
+
+                                             @Override
+                                             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                                             }
+
+                                             @Override
+                                             public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                             }
+                                         });
 
         copyArraylList.addAll(bookItemArrayList);
-
-        bookAdapter = new BookAdapter(bookItemArrayList, Glide.with(view));
-        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
-        recyclerView.setAdapter(bookAdapter);
-        recyclerView.setLayoutManager(layoutManager);
-
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
