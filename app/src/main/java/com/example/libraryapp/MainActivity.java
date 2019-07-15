@@ -4,39 +4,43 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.libraryapp.user.LibraryActivity;
+import com.example.libraryapp.user.LoginActivity;
 import com.example.libraryapp.user.ProfileActivity;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
-import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import android.view.Menu;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,6 +50,14 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private BottomSheetBehavior bottomSheetBehavior;
     private NavigationView navigationView;
+    private int[][] ratings = null;
+    private ArrayList<String> isbnMap = new ArrayList<>();
+    private ArrayList<String> userMap = new ArrayList<>();
+    private int user_index = 0;
+    private int book_index = 0;
+    private DatabaseReference ref;
+    private DatabaseReference userRef;
+    private DatabaseReference bookRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +84,86 @@ public class MainActivity extends AppCompatActivity
             int position = extras.getInt("fragment");
             mViewPager.setCurrentItem(position);
         }
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        ref = database.getReference("server/saving-data/");
+        userRef = ref.child("user");
+        bookRef = ref.child("book");
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                final long userNum = dataSnapshot.getChildrenCount();
+                bookRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        final long bookNum = dataSnapshot.getChildrenCount();
+                        ratings = new int[(int) userNum][(int) bookNum];
+                        userRef.addChildEventListener(new ChildEventListener() {
+                            @Override
+                            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                                if (dataSnapshot.getValue() != null && dataSnapshot.hasChild("userRating")) {
+                                    String data = dataSnapshot.child("userRating").getValue().toString().substring(1, dataSnapshot.child("userRating").getValue().toString().length() - 1);
+                                    Log.e("main", data);
+                                    String[] ratingData = data.split(",");
+                                    for (int i = 0; i < ratingData.length; i++) {
+                                        String[] split = ratingData[i].split("=");
+                                        if (isbnMap.contains(split[0])) {
+                                            ratings[user_index][isbnMap.indexOf(split[0])] = Integer.parseInt(split[1]);
+                                        } else {
+                                            ratings[user_index][book_index] = Integer.parseInt(split[1]);
+                                            isbnMap.add(split[0]);
+                                            book_index++;
+                                        }
+                                    }
+                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
+                                    user_index++;
+                                } else {
+                                    for (int j = 0; j < bookNum; j++) {
+                                        ratings[user_index][j] = 0;
+                                    }
+                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
+                                    user_index++;
+                                }
+                                for (int i = 0; i < ratings[user_index - 1].length; i++) {
+                                        System.out.print(ratings[user_index - 1][i]);
+                                }
+                                System.out.print("\n");
+                            }
+
+                            @Override
+                            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                            }
+
+                            @Override
+                            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                            }
+
+                            @Override
+                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         LinearLayout llBottomSheet = findViewById(R.id.bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
@@ -169,7 +261,10 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_logout) {
-
+            FirebaseAuth.getInstance().signOut();
+            ActivityCompat.finishAffinity(MainActivity.this);
+            Intent restart = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(restart);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

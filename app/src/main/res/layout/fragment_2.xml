@@ -13,6 +13,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/ic_back"
+            android:backgroundTint="#F3F3F3"
             android:layout_marginLeft="15dp"
             android:layout_gravity="center"
             android:id="@+id/ib_back"/>
@@ -50,6 +51,10 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <androidx.recyclerview.widget.RecyclerView android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
@@ -57,5 +62,6 @@
         android:layout_marginTop="10dp"
         >
     </androidx.recyclerview.widget.RecyclerView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </LinearLayout>

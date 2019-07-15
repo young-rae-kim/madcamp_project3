@@ -42,6 +42,9 @@ public class BookActivity extends AppCompatActivity {
     private DatabaseReference libraryRef;
     private DatabaseReference bookRef;
     private DatabaseReference ref;
+    private TableRow borrowedRow;
+    private TableRow informationRow;
+    private TableRow reserveRow;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,6 +92,19 @@ public class BookActivity extends AppCompatActivity {
                     book_email = dataSnapshot.child("owner").getValue().toString();
                     tv_status.setText(dataSnapshot.child("status").getValue().toString());
                     status = item.parseStatus(dataSnapshot.child("status").getValue().toString());
+                    Log.e("borrowed row", status + ", " + owner_email + ", " + book_email);
+                    if (status == BookItem.BookStatus.Available && !book_email.equals(owner_email)) {
+                        borrowedRow.setClickable(true);
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            tv_request.setTextColor(getColor(R.color.black));
+                        }
+                    } else {
+                        borrowedRow.setClickable(false);
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            tv_request.setTextColor(getColor(R.color.grayWhite));
+                        }
+                    }
+
                     bookRef.orderByChild("isbn").equalTo(isbn).addChildEventListener(new ChildEventListener() {
                         @Override
                         public void onChildAdded(@NonNull DataSnapshot data, @Nullable String s) {
@@ -127,7 +143,11 @@ public class BookActivity extends AppCompatActivity {
             }
         });
 
-        final TableRow borrowedRow = findViewById(R.id.tv_borrow);
+        borrowedRow = findViewById(R.id.tv_borrow);
+        borrowedRow.setClickable(true);
+        if (Build.VERSION.SDK_INT >= 23) {
+            tv_request.setTextColor(getColor(R.color.gray));
+        }
         borrowedRow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -139,12 +159,12 @@ public class BookActivity extends AppCompatActivity {
                 tv_status.setText("Borrowed");
                 borrowedRow.setClickable(false);
                 if (Build.VERSION.SDK_INT >= 23) {
-                    tv_request.setBackgroundColor(getColor(R.color.grayWhite));
+                    tv_request.setTextColor(getColor(R.color.grayWhite));
                 }
             }
         });
 
-        final TableRow informationRow = findViewById(R.id.tv_show);
+        informationRow = findViewById(R.id.tv_show);
         informationRow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -155,13 +175,6 @@ public class BookActivity extends AppCompatActivity {
             }
         });
 
-        final TableRow reserveRow = findViewById(R.id.tv_reserve);
-
-        if (!(status == BookItem.BookStatus.Available && !book_email.equals(owner_email))) {
-            borrowedRow.setClickable(false);
-            if (Build.VERSION.SDK_INT >= 23) {
-                tv_request.setTextColor(getColor(R.color.grayWhite));
-            }
-        }
+        reserveRow = findViewById(R.id.tv_reserve);
     }
 }

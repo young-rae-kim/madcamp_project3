@@ -3,6 +3,7 @@ package com.example.libraryapp.Fragment2;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -15,15 +16,20 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
+import com.example.libraryapp.BookActivity;
 import com.example.libraryapp.BookItem;
 import com.example.libraryapp.MainActivity;
 import com.example.libraryapp.PreActivity;
 import com.example.libraryapp.R;
+import com.example.libraryapp.RecyclerItemClickListener;
 import com.example.libraryapp.user.BookAdapter;
+import com.example.libraryapp.user.LibraryActivity;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,18 +38,20 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
-public class Fragment2 extends Fragment {
+public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private TextView mTextView;
     private EditText editText;
     private static Context context;
     static ArrayList<BookItem> copyArraylList= new ArrayList<>();
-    ArrayList<BookItem> bookItemArrayList = new ArrayList<>();
+    static ArrayList<BookItem> bookItemArrayList = new ArrayList<>();
     ArrayList<String> bookIDList = new ArrayList<>();
     BookAdapter bookAdapter;
     RecyclerView recyclerView;
     private ImageButton ib_back;
     private DatabaseReference ref;
     private DatabaseReference libraryRef;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private int index = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +74,8 @@ public class Fragment2 extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setAdapter(bookAdapter);
         recyclerView.setLayoutManager(layoutManager);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
 
         ib_back = (ImageButton) view.findViewById(R.id.ib_back);
         ib_back.setOnClickListener(new View.OnClickListener() {
@@ -137,6 +147,19 @@ public class Fragment2 extends Fragment {
             }
         });
 
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recyclerView,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        Intent intent = new Intent(getContext(), BookActivity.class);
+                        intent.putExtra("key", bookIDList.get(position));
+                        intent.putExtra("owner_email", ((MainActivity) getActivity()).getOwner_email());
+                        startActivity(intent);
+                        getActivity().finish();
+                        index = position;
+                    }
+                }));
+
         return view;
     }
 
@@ -173,6 +196,17 @@ public class Fragment2 extends Fragment {
         }
         // 리스트 데이터가 변경되었으므로 아답터를 갱신하여 검색된 데이터를 화면에 보여준다.
         bookAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onRefresh() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                bookAdapter.notifyItemChanged(index);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        }, 1000);
     }
 }
 

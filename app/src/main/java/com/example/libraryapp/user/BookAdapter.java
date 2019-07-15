@@ -1,19 +1,14 @@
 package com.example.libraryapp.user;
 
-import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.RequestManager;
-import com.example.libraryapp.BookActivity;
 import com.example.libraryapp.BookItem;
 import com.example.libraryapp.R;
 
@@ -60,7 +55,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
         viewHolder.result_author.setText(imageList.get(position).getAuthor());
         viewHolder.result_publisher.setText(imageList.get(position).getPublisher());
         viewHolder.result_status.setText(imageList.get(position).getStatus());
-
     }
 
     @Override
