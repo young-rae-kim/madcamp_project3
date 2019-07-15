@@ -59,6 +59,10 @@
             android:name=".user.CheckActivity"
             android:theme="@style/AppTheme">
             </activity>
+        <activity
+            android:name=".BookActivity"
+            android:theme="@style/AppTheme">
+        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"

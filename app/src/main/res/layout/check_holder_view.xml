@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="5dp"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     tools:ignore="NamespaceTypo">
@@ -15,8 +14,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        app:cardCornerRadius="10dp"
-        android:layout_margin="7dp"
+        app:cardCornerRadius="8dp"
+        android:layout_margin="4dp"
         android:id="@+id/check_card"
         >
         <LinearLayout
@@ -25,11 +24,13 @@
             android:orientation="horizontal"
             android:layout_margin="5dp">
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="56dp"
                 android:src="@mipmap/ic_launcher"
                 android:id="@+id/iv_thumbnail"/>
             <LinearLayout
+                android:layout_gravity="center"
+                android:gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -39,20 +40,19 @@
                     android:layout_height="wrap_content"
                     android:textSize="20dp"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginTop="10dp"
                     android:layout_gravity="center_vertical"
                     android:id="@+id/tv_title"
-                    android:text="이것은 책 제목이다."
+                    android:text="Title"
                     android:textColor="#000000"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="20dp"
+                    android:textSize="16dp"
                     android:layout_marginLeft="10dp"
                     android:layout_gravity="center_vertical"
                     android:id="@+id/tv_author"
-                    android:text="이것은 작가 이름이다."
-                    android:textColor="#000000"/>
+                    android:text="Author"
+                    android:textColor="@color/gray"/>
             </LinearLayout>
             <View
                 android:layout_width="0dp"

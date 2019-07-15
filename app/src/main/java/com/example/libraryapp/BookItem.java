@@ -12,6 +12,7 @@ public class BookItem {
     private BookStatus status = BookStatus.Available;
     private double averageStar = 2.5;
     private int value = 1;
+    private int ratedPerson = 1;
     public BookItem(String thumbnail, String title, String author, String publisher, String pubdate, String isbn, String owner) {
         this.thumbnail = thumbnail;
         this.title = title;
@@ -46,6 +47,12 @@ public class BookItem {
     public String getOwner() { return owner; }
     public String getBorrower() { return borrower; }
     public int getValue() { return value; }
+    public int getRatedPerson() {
+        return ratedPerson;
+    }
+    public void setRatedPerson(int ratedPerson) {
+        this.ratedPerson = ratedPerson;
+    }
     public BookStatus parseStatus(String status) {
         if (status.equals("Available")) {
             return BookStatus.Available;

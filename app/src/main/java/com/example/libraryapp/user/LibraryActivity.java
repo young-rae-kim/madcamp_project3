@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.libraryapp.BookActivity;
 import com.example.libraryapp.BookItem;
 import com.example.libraryapp.BottomSheetFragment;
 import com.example.libraryapp.MainActivity;
@@ -39,7 +40,9 @@ public class LibraryActivity extends AppCompatActivity {
     private BookAdapter libraryAdapter;
     private BookAdapter borrowedAdapter;
     private ArrayList<BookItem> libraryList = new ArrayList<>();
+    private ArrayList<String> libraryID = new ArrayList<>();
     private ArrayList<BookItem> borrowedList = new ArrayList<>();
+    private ArrayList<String> borrowedID = new ArrayList<>();
     private BottomSheetBehavior bottomSheetBehavior;
     private DatabaseReference libraryRef;
     private DatabaseReference ref;
@@ -80,6 +83,7 @@ public class LibraryActivity extends AppCompatActivity {
                     item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
                     item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
                     item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
+                    libraryID.add(dataSnapshot.getKey());
                     libraryAdapter.getItems().add(item);
                     libraryAdapter.notifyItemInserted(libraryAdapter.getItemCount() - 1);
                 }
@@ -121,6 +125,7 @@ public class LibraryActivity extends AppCompatActivity {
                     item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
                     item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
                     item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
+                    borrowedID.add(dataSnapshot.getKey());
                     borrowedAdapter.getItems().add(item);
                     borrowedAdapter.notifyItemInserted(borrowedAdapter.getItemCount() - 1);
                 }
@@ -191,7 +196,10 @@ public class LibraryActivity extends AppCompatActivity {
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-
+                        Intent intent = new Intent(LibraryActivity.this, BookActivity.class);
+                        intent.putExtra("key", libraryID.get(position));
+                        intent.putExtra("owner_email", owner_email);
+                        startActivity(intent);
                     }
                 }));
 
@@ -199,7 +207,10 @@ public class LibraryActivity extends AppCompatActivity {
                 new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-
+                        Intent intent = new Intent(LibraryActivity.this, BookActivity.class);
+                        intent.putExtra("key", borrowedID.get(position));
+                        intent.putExtra("owner_email", owner_email);
+                        startActivity(intent);
                     }
                 }));
     }

@@ -20,9 +20,8 @@ import com.example.libraryapp.R;
 import java.util.ArrayList;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHolder> {
-    private ArrayList<BookItem> imageList; // 아이템 어레이
+    private ArrayList<BookItem> imageList;
     private final RequestManager glide;
-    private Context mcontext;
 
     public BookAdapter(ArrayList<BookItem> list, RequestManager mGlide) {
         imageList = list;
@@ -63,16 +62,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
         viewHolder.result_author.setText(imageList.get(position).getAuthor());
         viewHolder.result_publisher.setText(imageList.get(position).getPublisher());
         viewHolder.result_status.setText(imageList.get(position).getStatus());
-        viewHolder.parent_layout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Log.d(TAG, "onClick: ");
-                // 인텐트로 북아이템이나 각각의 텍스트나 이미지 넘겨서 BookActivity에서 띄울 수 있게// 근데 레지스터할 때 처럼 네이버 책의 url을 못 받아 오나?
-                Intent intent = new Intent(mcontext, BookActivity.class);
-                //intent.putExtra() position
-                mcontext.startActivity(intent);
-            }
-        });
     }
 
     @Override
