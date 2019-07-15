@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PreActivity extends AppCompatActivity {
+    private String owner_email;
     private int item_clicked = 0;
     private RecyclerView recyclerView;
     private MenuAdapter mAdapter;
@@ -59,6 +60,8 @@ public class PreActivity extends AppCompatActivity {
                 Manifest.permission.CAMERA
         }, 0);
 
+        Intent intent = getIntent();
+        owner_email = intent.getStringExtra("owner_email");
         recyclerView = findViewById(R.id.recycler_menu);
         layoutManager = new LinearLayoutManager(getApplicationContext());
         ((LinearLayoutManager) layoutManager).setOrientation(RecyclerView.VERTICAL);
@@ -82,20 +85,24 @@ public class PreActivity extends AppCompatActivity {
                             case 0:
                                 Intent intent0 = new Intent(PreActivity.this, MainActivity.class);
                                 intent0.putExtra("fragment", position);
+                                intent0.putExtra("owner_email", owner_email);
                                 startActivity(intent0);
                                 break;
                             case 1:
                                 Intent intent1 = new Intent(PreActivity.this, MainActivity.class);
                                 intent1.putExtra("fragment", position);
+                                intent1.putExtra("owner_email", owner_email);
                                 startActivity(intent1);
                                 break;
                             case 2:
                                 Intent intent2 = new Intent(PreActivity.this, MainActivity.class);
                                 intent2.putExtra("fragment", position);
+                                intent2.putExtra("owner_email", owner_email);
                                 startActivity(intent2);
                                 break;
                             case 3:
                                 Intent intent = new Intent(PreActivity.this, ProfileActivity.class);
+                                intent.putExtra("owner_email", owner_email);
                                 startActivity(intent);
                                 break;
                         }
@@ -106,7 +113,10 @@ public class PreActivity extends AppCompatActivity {
         LinearLayout llBottomSheet = findViewById(R.id.bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        Bundle bundle = new Bundle();
+        bundle.putString("owner_email", owner_email);
         BottomSheetFragment fragment = new BottomSheetFragment();
+        fragment.setArguments(bundle);
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
         fragmentTransaction.replace(R.id.bottom_frame, fragment);
@@ -123,6 +133,8 @@ public class PreActivity extends AppCompatActivity {
             }
         });
     }
+
+    public String getOwner_email() { return owner_email; }
 
     @Override
     public void onBackPressed() {

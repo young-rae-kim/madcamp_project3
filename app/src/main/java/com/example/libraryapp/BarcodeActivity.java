@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 public class BarcodeActivity extends AppCompatActivity {
     private Bundle savedBundle;
+    private String isbn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,6 +43,7 @@ public class BarcodeActivity extends AppCompatActivity {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && result != null && result.getContents() != null) {
             Toast.makeText(this, "Scanned ISBN : " + result.getContents(), Toast.LENGTH_LONG).show();
+            isbn = result.getContents();
             searchBook(result.getContents());
             savedBundle.putInt("token", 0);
         }
@@ -77,6 +79,7 @@ public class BarcodeActivity extends AppCompatActivity {
                         intent.putExtra("author", resultList.get(0).getAuthor());
                         intent.putExtra("publisher", resultList.get(0).getPublisher());
                         intent.putExtra("pubdate", resultList.get(0).getPubdate());
+                        intent.putExtra("isbn", isbn);
                         br.close();
                         con.disconnect();
                         setResult(RESULT_OK, intent);

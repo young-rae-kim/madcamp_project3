@@ -40,6 +40,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    private String owner_email;
     private ViewPager mViewPager;
     private PagerAdapter mPagerAdapter;
     private FloatingActionButton fab;
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
+        Intent intent = getIntent();
+        owner_email = intent.getStringExtra("owner_email");
         mViewPager = findViewById(R.id.pager_content);
         mPagerAdapter = new PagerAdapter(getSupportFragmentManager(), 3);
         mViewPager.setAdapter(mPagerAdapter);
@@ -98,7 +101,10 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View view) {
                 fab.hide();
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                Bundle bundle = new Bundle();
+                bundle.putString("owner_email", owner_email);
                 BottomSheetFragment fragment = new BottomSheetFragment();
+                fragment.setArguments(bundle);
                 FragmentManager fm = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fm.beginTransaction();
                 fragmentTransaction.replace(R.id.bottom_frame, fragment);
@@ -150,10 +156,12 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_profile) {
             Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            intent.putExtra("owner_email", owner_email);
             startActivity(intent);
             finish();
         } else if (id == R.id.nav_library) {
             Intent intent = new Intent(MainActivity.this, LibraryActivity.class);
+            intent.putExtra("owner_email", owner_email);
             startActivity(intent);
             finish();
         } else if (id == R.id.nav_share) {

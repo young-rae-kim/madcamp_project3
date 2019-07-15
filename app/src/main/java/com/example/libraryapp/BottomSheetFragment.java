@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,8 +35,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,8 +52,11 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BottomSheetFragment extends BottomSheetDialogFragment {
+    private DatabaseReference ref;
     private final int SEND_PICTURE = 0;
     private final int REQUEST_IMAGE_CAPTURE = 1;
     private final int BARCODE = 2;
@@ -64,14 +70,19 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView cameraView;
     private TextView textView;
     private String currentPhotoPath;
+    private String owner_email;
     private TextInputEditText editTitle;
     private TextInputEditText editAuthor;
     private TextInputEditText editPublisher;
     private MaterialButton addCart;
+    private MaterialButton addLibrary;
     private ArrayList<BookItem> cartItems = new ArrayList<>();
     private LinearLayoutManager mLinearLayoutManager;
     private CartAdapter mCartAdapter;
     private BottomSheetBehavior bottomSheetBehavior;
+    private RandomISBN randomISBN = new RandomISBN();
+    private DatabaseReference libraryRef;
+    private DatabaseReference bookRef;
 
     @Override
     public int getTheme() {
@@ -81,6 +92,11 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        ref = database.getReference("server/saving-data/");
+        libraryRef = ref.child("library");
+        bookRef = ref.child("book");
+        owner_email = getArguments().getString("owner_email");
     }
 
     @Nullable
@@ -95,6 +111,7 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
         editAuthor = view.findViewById(R.id.editAuthor);
         editPublisher = view.findViewById(R.id.editPublisher);
         addCart = view.findViewById(R.id.addCart);
+        addLibrary = view.findViewById(R.id.addLibrary);
         recyclerView = view.findViewById(R.id.recycler_cart);
 
         mLinearLayoutManager = new LinearLayoutManager(getContext());
@@ -215,7 +232,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             editTitle.getText().toString(),
                             editAuthor.getText().toString(),
                             editPublisher.getText().toString(),
-                        "Undetermined");
+                            "Undetermined",
+                            randomISBN.GeneratingRandomStringBounded(),
+                            owner_email);
 
                 mCartAdapter.getItems().add(newItem);
                 mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
@@ -242,10 +261,63 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                     }
                 }));
 
+        addLibrary.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (int i = 0; i < mCartAdapter.getItemCount(); i++) {
+                    pushBook(i);
+                }
+                cartSize = 0;
+                cartCard.setVisibility(View.GONE);
+            }
+        });
+
         if (getDialog() != null) {
             getDialog().setCanceledOnTouchOutside(true);
         }
         return view;
+    }
+
+    private void pushBook(final int i) {
+        bookRef.orderByChild("isbn").equalTo(mCartAdapter.getItems().get(i).getIsbn()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                long numBooks = dataSnapshot.getChildrenCount();
+                String data = null;
+                if (dataSnapshot.getValue() != null) {
+                    data = dataSnapshot.getValue().toString();
+                }
+                Log.d("push", "number:" + numBooks);
+                if (numBooks == 0) {
+                    libraryRef.push().setValue(mCartAdapter.getItems().get(i));
+                    bookRef.push().setValue(mCartAdapter.getItems().get(i));
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                    Log.d("push", "done");
+                } else if (numBooks == 1 && data != null && data.contains("=")) {
+                    libraryRef.push().setValue(mCartAdapter.getItems().get(i));
+                    String id = data.split("=")[0].substring(1);
+                    int startPosition = data.indexOf("value=") + 6;
+                    int endPosition = data.indexOf(",", startPosition);
+                    int value = Integer.parseInt(data.substring(startPosition, endPosition));
+                    Map<String, Object> update = new HashMap<>();
+                    update.put(id + "/value", value + 1);
+                    bookRef.updateChildren(update);
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                    Log.d("push", "done:" + id + ", " + value);
+                } else {
+                    Log.e("push", "failed");
+                    mCartAdapter.getItems().remove(i);
+                    mCartAdapter.notifyItemRemoved(i);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private File createImageFile() throws IOException {
@@ -315,7 +387,9 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             data.getStringExtra("title"),
                             data.getStringExtra("author"),
                             data.getStringExtra("publisher"),
-                            data.getStringExtra("pubdate"));
+                            data.getStringExtra("pubdate"),
+                            data.getStringExtra("isbn"),
+                            owner_email);
 
                     mCartAdapter.getItems().add(newItem);
                     mCartAdapter.notifyItemInserted(mCartAdapter.getItemCount() - 1);
@@ -332,11 +406,12 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getTitle() + ", "
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getAuthor() + ", "
                             + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPublisher() + ", "
-                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPubdate());
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getPubdate() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getIsbn() + ", "
+                            + mCartAdapter.getItems().get(mCartAdapter.getItemCount() - 1).getOwner());
                 }
                 break;
             default:
-                Log.e("BARCODE", "onResult");
                 imageView.setVisibility(View.GONE);
                 textView.setVisibility(View.VISIBLE);
                 break;
@@ -483,7 +558,6 @@ public class BottomSheetFragment extends BottomSheetDialogFragment {
                         ArrayList<BookItem> resultList = parser.parse(inputStream);
                         br.close();
                         con.disconnect();
-
                         return;
                     } else {
                         br = new BufferedReader(new InputStreamReader(con.getErrorStream()));
