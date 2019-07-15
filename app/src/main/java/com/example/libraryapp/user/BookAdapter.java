@@ -62,6 +62,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
         viewHolder.result_author.setText(imageList.get(position).getAuthor());
         viewHolder.result_publisher.setText(imageList.get(position).getPublisher());
         viewHolder.result_status.setText(imageList.get(position).getStatus());
+
     }
 
     @Override

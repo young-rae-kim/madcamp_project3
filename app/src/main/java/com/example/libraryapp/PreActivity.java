@@ -37,6 +37,7 @@ public class PreActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int code = intent.getIntExtra("code",-1);
 
+
         if (Build.VERSION.SDK_INT >= 23) {
             getWindow().setStatusBarColor(getColor(R.color.colorPrimaryDark));
         }
@@ -73,13 +74,13 @@ public class PreActivity extends AppCompatActivity {
                                 intent0.putExtra("owner_email", owner_email);
                                 startActivity(intent0);
                                 break;
-                            case 1:
+                            case 1: // Fragment1, 추천 리사이클뷰
                                 Intent intent1 = new Intent(PreActivity.this, MainActivity.class);
                                 intent1.putExtra("fragment", position);
                                 intent1.putExtra("owner_email", owner_email);
                                 startActivity(intent1);
                                 break;
-                            case 2:
+                            case 2: // Fragment2, 검색
                                 Intent intent2 = new Intent(PreActivity.this, MainActivity.class);
                                 intent2.putExtra("fragment", position);
                                 intent2.putExtra("owner_email", owner_email);

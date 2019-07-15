@@ -223,6 +223,7 @@ public class CheckActivity extends AppCompatActivity implements View.OnClickList
                 intent.putExtra("owner_email", owner_email);
                 startActivity(intent);
                 break;
+
             case R.id.ib_back:
                 if (!backPressed) {
                     Toast.makeText(CheckActivity.this, "지금 뒤로 돌아가시면 추천 정보가 제공되지 않습니다. 한 번 더 누르면 종료됩니다.", Toast.LENGTH_LONG).show();
@@ -236,6 +237,7 @@ public class CheckActivity extends AppCompatActivity implements View.OnClickList
                     startActivity(intent1);
                     break;
                 }
+
         }
     }
 }
