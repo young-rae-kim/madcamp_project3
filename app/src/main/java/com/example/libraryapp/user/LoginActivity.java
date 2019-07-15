@@ -217,8 +217,8 @@ public class LoginActivity extends AppCompatActivity {
                                 loginPrefsEditor.clear();
                                 loginPrefsEditor.commit();
                             }
-
-                            Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
+                            //Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
+                            Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
                             resultIntent.putExtra("owner_email", savedEmail);
                             startActivity(resultIntent);
                             finish();
@@ -242,6 +242,7 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(LoginActivity.this, "Authentication & Login succeeded.",
                                     Toast.LENGTH_SHORT).show();
+                            //Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
                             Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
                             resultIntent.putExtra("owner_email", user.getEmail());
                             startActivity(resultIntent);
