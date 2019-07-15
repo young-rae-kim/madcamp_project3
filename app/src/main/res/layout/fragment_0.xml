@@ -13,6 +13,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:background="@drawable/ic_back"
+            android:backgroundTint="#F3F3F3"
             android:layout_marginLeft="15dp"
             android:layout_gravity="center"
             android:id="@+id/ib_back"/>
@@ -24,7 +25,7 @@
             android:paddingLeft="25dp"
             android:textColor="#FFFFFF"
             android:layout_gravity="center_horizontal"
-            android:text="fragment0"
+            android:text="도서 목록"
             android:textSize="18dp"
             android:textStyle="bold"/>
         <View
@@ -32,37 +33,45 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
     </LinearLayout>
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="15dp"
-        android:text="첫번째"
+        android:gravity="center_vertical"
+        android:layout_margin="8dp"
+        android:layout_height="32dp"
+        android:textStyle="bold"
+        android:textColor="#F3F3F3"
+        android:text="금주의 픽"
         />
     <androidx.recyclerview.widget.RecyclerView android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="wrap_content"
         android:scrollbars="horizontal"
         android:id="@+id/recycler_view"
-        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         >
     </androidx.recyclerview.widget.RecyclerView>
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="15dp"
-        android:text="두번째"
+        android:gravity="center_vertical"
+        android:layout_margin="8dp"
+        android:layout_height="32dp"
+        android:textStyle="bold"
+        android:textColor="#F3F3F3"
+        android:text="최근 입고된 책"
         />
     <androidx.recyclerview.widget.RecyclerView android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="wrap_content"
         android:scrollbars="horizontal"
         android:id="@+id/recycler_view2"
-        android:layout_marginTop="10dp"
         android:orientation="horizontal"
         >
     </androidx.recyclerview.widget.RecyclerView>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        >
-
-    </View>
-
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

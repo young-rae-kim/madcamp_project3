@@ -81,15 +81,14 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
         ib_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, PreActivity.class);
-                startActivity(intent);
+                getActivity().finish();
             }
         });
 
         libraryRef.addChildEventListener(new ChildEventListener() {
                                              @Override
                                              public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                                                 if (dataSnapshot.getValue() != null) {
+                                                 if (dataSnapshot.getValue() != null && getActivity() != null) {
                                                      BookItem item = new BookItem(dataSnapshot.child("thumbnail").getValue().toString(),
                                                              dataSnapshot.child("title").getValue().toString(),
                                                              dataSnapshot.child("author").getValue().toString(),
@@ -155,7 +154,6 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
                         intent.putExtra("key", bookIDList.get(position));
                         intent.putExtra("owner_email", ((MainActivity) getActivity()).getOwner_email());
                         startActivity(intent);
-                        getActivity().finish();
                         index = position;
                     }
                 }));
