@@ -72,6 +72,7 @@ public class CheckActivity extends AppCompatActivity implements View.OnClickList
                 intent.putExtra("code", 1);
                 // 디비에 저장 안 했음
                 startActivity(intent);
+                break;
                 //finish();
 
             case R.id.ib_back:// 뒤로 가기 하면 PreActivity로 가되, 레이팅은 저장 안 되게// 지금 알고리즘으로는 뒤로 가도 저장이 될텐데??
@@ -81,6 +82,7 @@ public class CheckActivity extends AppCompatActivity implements View.OnClickList
                 intent1.putExtra("code", 0);
                 startActivity(intent1);
                 //finish();
+                break;
         }
 
     }

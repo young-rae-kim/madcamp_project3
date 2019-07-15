@@ -48,7 +48,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
 
     @Override
     public BookAdapter.CustomViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.book_item, viewGroup, false); // library_item이 아니라?
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.library_item, viewGroup, false);
         BookAdapter.CustomViewHolder viewHolder = new BookAdapter.CustomViewHolder(view);
         return viewHolder;
     }
@@ -67,7 +67,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
             @Override
             public void onClick(View view) {
                 //Log.d(TAG, "onClick: ");
-                // 인텐트로 북아이템이나 각각의 텍스트나 이미지 넘겨서 BookActivity에서 띄울 수 있게// 근데 레지스터할 때 처럼 네이버 책의 url을 못 받아 오나?
+                // 인텐트로 북아이템이나 각각의 텍스트나 이미지 넘겨서 BookActivity에서 띄울 수 있게/ 그 전에 추천에 리사이클러뷰로 띄울 수 있게끔
                 Intent intent = new Intent(mcontext, BookActivity.class);
                 //intent.putExtra() position
                 mcontext.startActivity(intent);

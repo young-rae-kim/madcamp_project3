@@ -38,17 +38,15 @@ public class PreActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int code = intent.getIntExtra("code",-1);
         System.out.println("code is: "+code);
-//        if (code == 0) {// 뒤로 가기 버튼을 눌렀으면 받은
-//            System.out.println("if condtition===========================================");
-//            CheckActivity.user.getUserRating().clear();
-//        }
+        if (code == 0) {// 뒤로 가기 버튼을 눌렀으면 받은
+            System.out.println("if condtition===========================================");
+            CheckActivity.user.getUserRating().clear();
+        }
         System.out.println("PreActivity==============================================================");
         for ( HashMap.Entry<String, Double> entry :  CheckActivity.user.getUserRating().entrySet() ) {
             System.out.println("방법2) key : " + entry.getKey() +" / value : " + entry.getValue());
         }
 
-
-        출처: https://donggov.tistory.com/51 [동고랩]
 
         if (Build.VERSION.SDK_INT >= 23) {
             getWindow().setStatusBarColor(getColor(R.color.colorPrimaryDark));
@@ -84,12 +82,12 @@ public class PreActivity extends AppCompatActivity {
                                 intent0.putExtra("fragment", position);
                                 startActivity(intent0);
                                 break;
-                            case 1:
+                            case 1: // Fragment1, 추천 리사이클뷰
                                 Intent intent1 = new Intent(PreActivity.this, MainActivity.class);
                                 intent1.putExtra("fragment", position);
                                 startActivity(intent1);
                                 break;
-                            case 2:
+                            case 2: // Fragment2, 검색
                                 Intent intent2 = new Intent(PreActivity.this, MainActivity.class);
                                 intent2.putExtra("fragment", position);
                                 startActivity(intent2);
