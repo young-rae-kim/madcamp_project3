@@ -217,8 +217,7 @@ public class LoginActivity extends AppCompatActivity {
                                 loginPrefsEditor.clear();
                                 loginPrefsEditor.commit();
                             }
-                            //Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
-                            Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
+                            Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
                             resultIntent.putExtra("owner_email", savedEmail);
                             startActivity(resultIntent);
                             finish();
@@ -231,7 +230,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void registerUser(String email, String name, String password) {
+    private void registerUser(final String email, final String name, final String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -242,8 +241,8 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             Toast.makeText(LoginActivity.this, "Authentication & Login succeeded.",
                                     Toast.LENGTH_SHORT).show();
-                            //Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
-                            Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
+                            Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
+                            resultIntent.putExtra("name", name);
                             resultIntent.putExtra("owner_email", user.getEmail());
                             startActivity(resultIntent);
                             finish();
@@ -268,8 +267,9 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("Login", "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Intent resultIntent = new Intent(LoginActivity.this, PreActivity.class);
+                            Intent resultIntent = new Intent(LoginActivity.this, CheckActivity.class);
                             resultIntent.putExtra("owner_email", user.getEmail());
+                            resultIntent.putExtra("name", "User");
                             startActivity(resultIntent);
                             finish();
                         } else {

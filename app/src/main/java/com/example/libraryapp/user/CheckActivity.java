@@ -3,85 +3,239 @@ package com.example.libraryapp.user;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.libraryapp.BookItem;
 import com.example.libraryapp.PreActivity;
 import com.example.libraryapp.R;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
 
 public class CheckActivity extends AppCompatActivity implements View.OnClickListener {
+    private boolean backPressed = false;
+    private String owner_email;
+    private String name;
     private RecyclerView recyclerView;
-    CheckAdapter checkAdapter;
-    Context context;
-    private ArrayList<BookItem> bookItemArrayList;
+    private CheckAdapter checkAdapter;
+    private Context context;
+    private ArrayList<BookItem> bookItemArrayList = new ArrayList<>();
     private ImageButton ib_back, ib_save;
-    //로그인 후 유저 정보  인텐트로 이메일만 가지고 옴, 레지스터할 때 유저 인스턴스 생성 -> 디비에 저장/ 로그인할 때 디비에 있는 유저 정보 가지고 오기
-    //더미 유저 생성
-    public static User user = new User("이름", "아이디","이메일",new HashMap<String, Double>());
+    public static User user;
+    private DatabaseReference bookRef;
+    private DatabaseReference userRef;
+    private DatabaseReference ref;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check);
+        final Intent intent = getIntent();
+        owner_email = intent.getStringExtra("owner_email");
+        name = intent.getStringExtra("name");
         context = getApplicationContext();
-        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        ib_back = (ImageButton) findViewById(R.id.ib_back); // 뒤로가기 버튼은 없애야?, 경고하는 토스트 생성해야? // 한 번 더 누르면 뒤로 가집니다
-        ib_save = (ImageButton) findViewById(R.id.ib_save);
+        recyclerView = findViewById(R.id.recycler_view);
+        ib_back = findViewById(R.id.ib_back);
+        ib_save = findViewById(R.id.ib_save);
         ib_back.setOnClickListener(this);
         ib_save.setOnClickListener(this);
-
-        //더미 북아이템 생성
-        BookItem bookItem1 = new BookItem("썸네일", "타이틀", "작가", "출판사", "업데이트날짜");
-        bookItem1.setBookId("아이디1");
-        BookItem bookItem2 = new BookItem("썸네일2", "타이틀2", "작가2", "출판사2", "업데이트날짜2");
-        bookItem2.setBookId("아이디2");
-        bookItemArrayList =new ArrayList<BookItem>();
-        bookItemArrayList.add(bookItem1);
-        bookItemArrayList.add(bookItem2);
-
-        checkAdapter = new CheckAdapter(bookItemArrayList);
+        User user = new User(name, owner_email, new HashMap<String, Double>());
+        checkAdapter = new CheckAdapter(bookItemArrayList, Glide.with(CheckActivity.this));
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(checkAdapter);
-        //인텐트로 가지고 온 유저 이메일 등록
-        Intent intent = getIntent();
-        String userEmail = (String) intent.getStringExtra("owner_email");
-        user.setUserMail(userEmail);
-        System.out.println("Id is: "+user.getUserId());
-        System.out.println("Email is: "+user.getUserMail());
+        this.user = user;
 
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        ref = database.getReference("server/saving-data/");
+        bookRef = ref.child("book");
+        userRef = ref.child("user");
 
+        bookRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                long count = dataSnapshot.getChildrenCount();
+                if (count < 10) {
+                    bookRef.addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                            if (dataSnapshot.getValue() != null) {
+                                BookItem item = new BookItem(dataSnapshot.child("thumbnail").getValue().toString(),
+                                        dataSnapshot.child("title").getValue().toString(),
+                                        dataSnapshot.child("author").getValue().toString(),
+                                        dataSnapshot.child("publisher").getValue().toString(),
+                                        dataSnapshot.child("pubdate").getValue().toString(),
+                                        dataSnapshot.child("isbn").getValue().toString(),
+                                        owner_email);
+                                item.setValue(Integer.parseInt(dataSnapshot.child("value").getValue().toString()));
+                                item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
+                                item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
+                                item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
+                                checkAdapter.getBookItemArrayList().add(item);
+                                checkAdapter.notifyItemInserted(checkAdapter.getItemCount() - 1);
+                            }
+                        }
+
+                        @Override
+                        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                        }
+
+                        @Override
+                        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                } else {
+                    bookRef.orderByChild("averageStar").limitToLast(10).addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                            if (dataSnapshot.getValue() != null) {
+                                BookItem item = new BookItem(dataSnapshot.child("thumbnail").getValue().toString(),
+                                        dataSnapshot.child("title").getValue().toString(),
+                                        dataSnapshot.child("author").getValue().toString(),
+                                        dataSnapshot.child("publisher").getValue().toString(),
+                                        dataSnapshot.child("pubdate").getValue().toString(),
+                                        dataSnapshot.child("isbn").getValue().toString(),
+                                        owner_email);
+                                item.setValue(Integer.parseInt(dataSnapshot.child("value").getValue().toString()));
+                                item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
+                                item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
+                                item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
+                                checkAdapter.getBookItemArrayList().add(item);
+                                checkAdapter.notifyItemInserted(checkAdapter.getItemCount() - 1);
+                            }
+                        }
+
+                        @Override
+                        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                        }
+
+                        @Override
+                        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.ib_save:
-                Toast.makeText(CheckActivity.this,"성공적으로 저장.",Toast.LENGTH_LONG).show();
+                backPressed = false;
+                userRef.push().setValue(user);
+                Iterator it = user.getUserRating().entrySet().iterator();
+                while (it.hasNext()) {
+                    final HashMap.Entry pair = (HashMap.Entry) it.next();
+                    bookRef.orderByChild("isbn").equalTo(pair.getKey().toString()).addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                            if (dataSnapshot != null) {
+                                int ratedPerson = Integer.parseInt(dataSnapshot.child("ratedPerson").getValue().toString());
+                                Log.e("update rating", "person : " + ratedPerson);
+                                int newPerson = ratedPerson + 1;
+                                double newRating = Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString());
+                                if (ratedPerson > 0) {
+                                    newRating = (newRating * ratedPerson + Double.parseDouble(pair.getValue().toString())) / newPerson;
+                                }
+                                Log.e("update rating", "rating : " + newRating);
+                                Map<String, Object> update = new HashMap<>();
+                                update.put(dataSnapshot.getKey() + "/ratedPerson", newPerson);
+                                update.put(dataSnapshot.getKey() + "/averageStar", newRating);
+                                bookRef.updateChildren(update);
+                            }
+                        }
+
+                        @Override
+                        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                        }
+
+                        @Override
+                        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                    it.remove();
+                }
+
+                Toast.makeText(CheckActivity.this,"성공적으로 저장되었습니다.", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(CheckActivity.this, PreActivity.class);
                 intent.putExtra("code", 1);
-                // 디비에 저장 안 했음
+                intent.putExtra("owner_email", owner_email);
                 startActivity(intent);
-                //finish();
-
-            case R.id.ib_back:// 뒤로 가기 하면 PreActivity로 가되, 레이팅은 저장 안 되게// 지금 알고리즘으로는 뒤로 가도 저장이 될텐데??
-                // 백프레스를 해서 뒤로 가기로 하면 뭐가 바뀌나?/
-                Toast.makeText(CheckActivity.this,"지금 뒤로 돌아가시면 추천 정보가 제공되지 않습니다. 한 번 더 누르면 종료됩니다.",Toast.LENGTH_LONG).show();
-                Intent intent1 = new Intent(CheckActivity.this, PreActivity.class);
-                intent1.putExtra("code", 0);
-                startActivity(intent1);
-                //finish();
+                break;
+            case R.id.ib_back:
+                if (!backPressed) {
+                    Toast.makeText(CheckActivity.this, "지금 뒤로 돌아가시면 추천 정보가 제공되지 않습니다. 한 번 더 누르면 종료됩니다.", Toast.LENGTH_LONG).show();
+                    backPressed = true;
+                } else {
+                    user.getUserRating().clear();
+                    userRef.push().setValue(user);
+                    Intent intent1 = new Intent(CheckActivity.this, PreActivity.class);
+                    intent1.putExtra("code", 0);
+                    intent1.putExtra("owner_email", owner_email);
+                    startActivity(intent1);
+                    break;
+                }
         }
-
     }
 }
