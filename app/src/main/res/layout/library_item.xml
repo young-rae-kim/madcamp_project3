@@ -14,6 +14,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/parent_layout">
+
+        <RelativeLayout
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/library_thumbnail"
             android:layout_width="60dp"
@@ -49,51 +55,6 @@
             android:layout_marginBottom="8dp"
             android:layout_toRightOf="@+id/library_thumbnail"
             android:layout_below="@id/library_author"/>
-        <TextView
-            android:id="@+id/library_status"
-            android:text="Available"
-            android:textSize="20dp"
-            android:textColor="@color/colorPrimaryDark"
-            android:layout_marginLeft="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/parent_layout">
-            <ImageView
-                android:id="@+id/library_thumbnail"
-                android:layout_width="60dp"
-                android:layout_height="80dp"
-                android:src="@mipmap/ic_book"/>
-            <TextView
-                android:id="@+id/library_title"
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_toRightOf="@id/library_thumbnail"
-                android:textColor="#000000"
-                android:text="Title"
-                android:textSize="28dp"/>
-            <TextView
-                android:id="@+id/library_author"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:text="Author"
-                android:textSize="20dp"
-                android:layout_marginBottom="8dp"
-                android:layout_toRightOf="@id/library_thumbnail"
-                android:layout_below="@+id/library_title"/>
-            <TextView
-                android:id="@+id/library_publisher"
-                android:text="Publisher"
-                android:textSize="20dp"
-                android:layout_marginLeft="16dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_toRightOf="@+id/library_author"
-                android:layout_below="@id/library_title"/>
             <TextView
                 android:id="@+id/library_status"
                 android:text="Available"

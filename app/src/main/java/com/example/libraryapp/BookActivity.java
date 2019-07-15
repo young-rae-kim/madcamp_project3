@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,6 +40,7 @@ public class BookActivity extends AppCompatActivity {
     private ImageButton ib_back;
     private RatingBar ratingBar;
     private DatabaseReference libraryRef;
+    private DatabaseReference bookRef;
     private DatabaseReference ref;
 
     @Override
@@ -47,6 +50,7 @@ public class BookActivity extends AppCompatActivity {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         ref = database.getReference("server/saving-data/");
         libraryRef = ref.child("library");
+        bookRef = ref.child("book");
 
         Intent intent = getIntent();
         book_key = intent.getStringExtra("key");
@@ -85,7 +89,35 @@ public class BookActivity extends AppCompatActivity {
                     book_email = dataSnapshot.child("owner").getValue().toString();
                     tv_status.setText(dataSnapshot.child("status").getValue().toString());
                     status = item.parseStatus(dataSnapshot.child("status").getValue().toString());
-                    ratingBar.setRating((float) Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
+                    bookRef.orderByChild("isbn").equalTo(isbn).addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(@NonNull DataSnapshot data, @Nullable String s) {
+                            if (data.getValue() != null) {
+                                Log.e("library activity", "rating : " + (float) Double.parseDouble(data.child("averageStar").getValue().toString()));
+                                ratingBar.setRating((float) Double.parseDouble(data.child("averageStar").getValue().toString()));
+                            }
+                        }
+
+                        @Override
+                        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                        }
+
+                        @Override
+                        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
 

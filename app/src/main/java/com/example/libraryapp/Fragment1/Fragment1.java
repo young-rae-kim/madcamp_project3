@@ -60,10 +60,8 @@ public class Fragment1 extends Fragment {
         });
 
         //더미 북아이템 생성
-        BookItem bookItem1 = new BookItem("썸네일", "타이틀", "작가", "출판사", "업데이트날짜");
-        bookItem1.setBookId("아이디1");
-        BookItem bookItem2 = new BookItem("썸네일2", "타이틀2", "작가2", "출판사2", "업데이트날짜2");
-        bookItem2.setBookId("아이디2");
+        BookItem bookItem1 = new BookItem("썸네일", "타이틀", "작가", "출판사", "업데이트날짜", "아이디", "이메일");
+        BookItem bookItem2 = new BookItem("썸네일2", "타이틀2", "작가2", "출판사2", "업데이트날짜2", "아이디2", "이메일2");
         bookItemArrayList =new ArrayList<BookItem>();
         bookItemArrayList.add(bookItem1);
         bookItemArrayList.add(bookItem2);
@@ -73,13 +71,6 @@ public class Fragment1 extends Fragment {
         LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         recyclerView.setAdapter(bookAdapter);
         recyclerView.setLayoutManager(layoutManager);
-
-//        recyclerView.addOnItemTouchListener(context.getApplicationContext(),recyclerView, new RecyclerItemClickListener.OnItemClickListener(){
-//            @Override
-//            public void onItemClick(View view, int position) {
-//
-//            }
-//        });
 
         return view;
     }

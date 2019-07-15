@@ -33,7 +33,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
         public TextView result_author;
         public TextView result_publisher;
         public TextView result_status;
-        RelativeLayout parent_layout;
         public CustomViewHolder(View view) {
             super(view);
             result_image = view.findViewById(R.id.library_thumbnail);
@@ -41,7 +40,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
             result_author = view.findViewById(R.id.library_author);
             result_publisher = view.findViewById(R.id.library_publisher);
             result_status = view.findViewById(R.id.library_status);
-            parent_layout = view.findViewById(R.id.parent_layout);
         }
     }
 
