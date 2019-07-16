@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,8 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
     private static Context context;
     static ArrayList<BookItem> copyArraylList= new ArrayList<>();
     static ArrayList<BookItem> bookItemArrayList = new ArrayList<>();
-    ArrayList<String> bookIDList = new ArrayList<>();
+    static ArrayList<String> bookIDList = new ArrayList<>();
+    static ArrayList<String> copyBookIDList = new ArrayList<>();
     BookAdapter bookAdapter;
     RecyclerView recyclerView;
     private ImageButton ib_back;
@@ -142,7 +144,6 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
             public void afterTextChanged(Editable editable) {
                 String text = editText.getText().toString();
                 search(text);
-
             }
         });
 
@@ -165,14 +166,15 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
 
         // 문자 입력시마다 리스트를 지우고 새로 뿌려준다.
         copyArraylList.addAll(bookAdapter.getItems());
-        System.out.println(copyArraylList.size());
+        copyBookIDList.addAll(bookIDList);
+        Log.e("search", "" + copyArraylList.size());
         bookAdapter.getItems().clear();
-        bookAdapter.notifyDataSetChanged();
+        bookIDList.clear();
 
         // 문자 입력이 없을때는 모든 데이터를 보여준다.
         if (charText.length() == 0) {
             bookAdapter.getItems().addAll(copyArraylList);
-            bookAdapter.notifyDataSetChanged();
+            bookIDList.addAll(copyBookIDList);
         }
         // 문자 입력을 할때..
         else
@@ -188,6 +190,7 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
                 {
                     // 검색된 데이터를 리스트에 추가한다.
                     bookAdapter.getItems().add(copyArraylList.get(i));
+                    bookIDList.add(copyBookIDList.get(i));
                     bookAdapter.notifyItemInserted(bookAdapter.getItemCount() - 1);
                 }
             }

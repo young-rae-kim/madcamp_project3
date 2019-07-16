@@ -16,11 +16,13 @@ import java.util.ArrayList;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHolder> {
     private ArrayList<BookItem> imageList;
+    private ArrayList<BookItem> arrayList = new ArrayList<>();
     private final RequestManager glide;
 
     public BookAdapter(ArrayList<BookItem> list, RequestManager mGlide) {
         imageList = list;
         glide = mGlide;
+        arrayList.addAll(imageList);
     }
     public class CustomViewHolder extends RecyclerView.ViewHolder {
         public ImageView result_image;
@@ -60,6 +62,23 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.CustomViewHold
     @Override
     public int getItemCount() {
         return imageList.size();
+    }
+
+    public void filter(String charText) {
+        imageList.clear();
+        if (charText.length() == 0) {
+            imageList.addAll(arrayList);
+        } else {
+            for (BookItem recent : arrayList) {
+                String name = recent.getTitle();
+                String author = recent.getAuthor();
+                String publisher = recent.getPublisher();
+                if (name.contains(charText) || author.contains(charText) || publisher.contains(charText)) {
+                    imageList.add(recent);
+                }
+            }
+        }
+        notifyDataSetChanged();
     }
 
     public ArrayList<BookItem> getItems() { return imageList; }

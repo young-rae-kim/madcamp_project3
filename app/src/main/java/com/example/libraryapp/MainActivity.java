@@ -39,6 +39,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.view.Menu;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity
     private DatabaseReference ref;
     private DatabaseReference userRef;
     private DatabaseReference bookRef;
+    private TextView nav_name;
+    private TextView nav_email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,91 +82,96 @@ public class MainActivity extends AppCompatActivity
         mPagerAdapter = new PagerAdapter(getSupportFragmentManager(), 3);
         mViewPager.setAdapter(mPagerAdapter);
 
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        ref = database.getReference("server/saving-data/");
+        userRef = ref.child("user");
+        bookRef = ref.child("book");
+
+        nav_name = findViewById(R.id.nav_name);
+        nav_email = findViewById(R.id.nav_email);
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             int position = extras.getInt("fragment");
             mViewPager.setCurrentItem(position);
         }
 
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        ref = database.getReference("server/saving-data/");
-        userRef = ref.child("user");
-        bookRef = ref.child("book");
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                final long userNum = dataSnapshot.getChildrenCount();
-                bookRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        final long bookNum = dataSnapshot.getChildrenCount();
-                        ratings = new int[(int) userNum][(int) bookNum];
-                        userRef.addChildEventListener(new ChildEventListener() {
-                            @Override
-                            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                                if (dataSnapshot.getValue() != null && dataSnapshot.hasChild("userRating")) {
-                                    String data = dataSnapshot.child("userRating").getValue().toString().substring(1, dataSnapshot.child("userRating").getValue().toString().length() - 1);
-                                    Log.e("main", data);
-                                    String[] ratingData = data.split(",");
-                                    for (int i = 0; i < ratingData.length; i++) {
-                                        String[] split = ratingData[i].split("=");
-                                        if (isbnMap.contains(split[0])) {
-                                            ratings[user_index][isbnMap.indexOf(split[0])] = Integer.parseInt(split[1]);
-                                        } else {
-                                            ratings[user_index][book_index] = Integer.parseInt(split[1]);
-                                            isbnMap.add(split[0]);
-                                            book_index++;
-                                        }
-                                    }
-                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
-                                    user_index++;
-                                } else {
-                                    for (int j = 0; j < bookNum; j++) {
-                                        ratings[user_index][j] = 0;
-                                    }
-                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
-                                    user_index++;
-                                }
-                                for (int i = 0; i < ratings[user_index - 1].length; i++) {
-                                        System.out.print(ratings[user_index - 1][i]);
-                                }
-                                System.out.print("\n");
-                            }
 
-                            @Override
-                            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                            }
-
-                            @Override
-                            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                            }
-
-                            @Override
-                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+//        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                final long userNum = dataSnapshot.getChildrenCount();
+//                bookRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                        final long bookNum = dataSnapshot.getChildrenCount();
+//                        ratings = new int[(int) userNum][(int) bookNum];
+//                        userRef.addChildEventListener(new ChildEventListener() {
+//                            @Override
+//                            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//                                if (dataSnapshot.getValue() != null && dataSnapshot.hasChild("userRating")) {
+//                                    String data = dataSnapshot.child("userRating").getValue().toString().substring(1, dataSnapshot.child("userRating").getValue().toString().length() - 1);
+//                                    Log.e("main", data);
+//                                    String[] ratingData = data.split(",");
+//                                    for (int i = 0; i < ratingData.length; i++) {
+//                                        String[] split = ratingData[i].split("=");
+//                                        if (isbnMap.contains(split[0])) {
+//                                            ratings[user_index][isbnMap.indexOf(split[0])] = Integer.parseInt(split[1]);
+//                                        } else {
+//                                            ratings[user_index][book_index] = Integer.parseInt(split[1]);
+//                                            isbnMap.add(split[0]);
+//                                            book_index++;
+//                                        }
+//                                    }
+//                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
+//                                    user_index++;
+//                                } else {
+//                                    for (int j = 0; j < bookNum; j++) {
+//                                        ratings[user_index][j] = 0;
+//                                    }
+//                                    userMap.add(dataSnapshot.child("userMail").getValue().toString());
+//                                    user_index++;
+//                                }
+//                                for (int i = 0; i < ratings[user_index - 1].length; i++) {
+//                                        System.out.print(ratings[user_index - 1][i]);
+//                                }
+//                                System.out.print("\n");
+//                            }
+//
+//                            @Override
+//                            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                            }
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
 
         LinearLayout llBottomSheet = findViewById(R.id.bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(llBottomSheet);
@@ -191,6 +199,21 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                userRef.orderByChild("userMail").equalTo(owner_email).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.getValue() != null && owner_email != null) {
+                            nav_name.setText(dataSnapshot.child("userName").getValue().toString());
+                            nav_email.setText(owner_email);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
                 fab.hide();
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 Bundle bundle = new Bundle();
