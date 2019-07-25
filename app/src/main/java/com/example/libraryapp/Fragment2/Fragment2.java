@@ -100,7 +100,7 @@ public class Fragment2 extends Fragment implements SwipeRefreshLayout.OnRefreshL
                                                              ((MainActivity) getActivity()).getOwner_email());
                                                      item.setValue(Integer.parseInt(dataSnapshot.child("value").getValue().toString()));
                                                      item.setAverageStar(Double.parseDouble(dataSnapshot.child("averageStar").getValue().toString()));
-                                                     item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
+//                                                     item.setBorrower(dataSnapshot.child("borrower").getValue().toString());
                                                      item.setStatus(item.parseStatus(dataSnapshot.child("status").getValue().toString()));
                                                      bookIDList.add(dataSnapshot.getKey());
                                                      bookAdapter.getItems().add(item);
